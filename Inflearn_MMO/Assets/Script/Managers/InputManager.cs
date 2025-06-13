@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class InputManager
 {
@@ -12,11 +13,16 @@ public class InputManager
 
     public void OnUpdate()
     {
+
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
         //if (Input.anyKey == false)  //아무 입력도 없는 경우
         //    return;
 
         // 키입력 시
-        if(Input.anyKey && KeyAction != null)       //키보드 입력이 존재 하는 경우
+        if (Input.anyKey && KeyAction != null)       //키보드 입력이 존재 하는 경우
             KeyAction.Invoke();
 
         //마우스 클릭 시
