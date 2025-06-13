@@ -74,6 +74,7 @@ public class PlayerController : MonoBehaviour
 
     PlayerState _state = PlayerState.Idle;
 
+  
     void UpdateIdle()
     {
         Animator anim = GetComponent<Animator>();
