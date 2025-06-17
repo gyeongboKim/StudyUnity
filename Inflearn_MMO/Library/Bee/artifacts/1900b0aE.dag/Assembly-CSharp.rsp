@@ -361,6 +361,7 @@
 "Assets/Script/Managers/Managers.cs"
 "Assets/Script/Managers/ResourceManager.cs"
 "Assets/Script/UI/UIButton.cs"
+"Assets/Script/UI/UI_Base.cs"
 "Assets/Script/Utlls/Define.cs"
 "Assets/Script/Utlls/Util.cs"
 -langversion:9.0

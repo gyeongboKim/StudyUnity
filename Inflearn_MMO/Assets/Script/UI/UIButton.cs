@@ -6,10 +6,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIButton : MonoBehaviour
+public class UIButton : UI_Base
 {
-    Dictionary<Type, UnityEngine.Object[]> _objects = new Dictionary<Type, UnityEngine.Object[]>();
-
+    //UI 요소 이름을 정리하기 위한 열거형들.
     enum Buttons
     {
         PointButton,
@@ -19,35 +18,33 @@ public class UIButton : MonoBehaviour
         PointText,
         ScoreText,
     }
-    
+    enum GameObjects
+    { 
+        TestObject,
+    }
 
     private void Start()
     {
+        //열거형을 기반으로 요소들을 바인딩
         Bind<Button>(typeof(Buttons));
         Bind<TextMeshProUGUI>(typeof(Texts));
+        Bind<GameObject>(typeof(GameObjects));
+
+        //'ScoreText' 와 연결된 TextMeshProUGUI 컴포넌트를 가져와 텍스트 내용을 설정
+        GetText((int)Texts.ScoreText).text = "Bind Text";
     }
     
 
-    //Util.FindChild와 마찬가지로 T에 대한 조건을 똑같이 넣어줄것.
-    void Bind<T> (Type type) where T : UnityEngine.Object
-    {
-        string [] names = Enum.GetNames(type);
-        UnityEngine.Object[] objects = new UnityEngine.Object[names.Length];
-        _objects.Add(typeof(T), objects);
-
-        for(int i = 0; i < names.Length; i++)
-        {
-            objects[i] = Util.FindChild<T>(gameObject, names[i], true);
-        }
-    }
+    
+    
 
 
 
     int _score = 0;
+
+
     public void OnButtonClicked()
     {
-        
-        ++_score;
-        
+        ++_score;    
     }
 }
