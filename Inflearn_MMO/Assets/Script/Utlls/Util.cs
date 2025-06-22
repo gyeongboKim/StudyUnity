@@ -5,27 +5,36 @@ using UnityEngine;
 
 public class Util 
 {
-    public static GameObject FindChild(GameObject gameObject, string name = null, bool recursive = false) 
+    public static T GetOrAddComponent<T> (GameObject targetGameObject) where T : UnityEngine.Component
     {
-        Transform transform = FindChild<Transform>(gameObject, name, recursive);
+        T component = targetGameObject.GetComponent<T>();
+        if (component == null)
+            component = targetGameObject.AddComponent<T>();
+        return component;
+    }
+    //T가 GameObject인 경우
+    public static GameObject FindChild(GameObject parentGameObject, string name = null, bool recursive = false) 
+    {
+        Transform transform = FindChild<Transform>(parentGameObject, name, recursive);
         if (transform == null)
             return null;
 
         return transform.gameObject;
     }
 
-    public static T FindChild<T>(GameObject gameObject, string name = null, bool recursive = false) where T : UnityEngine.Object
+    //T가 Component인 경우
+    public static T FindChild<T>(GameObject parentGameObject, string name = null, bool recursive = false) where T : UnityEngine.Object
     {
         //부모 오브젝트가 비어있는 경우 null 리턴
-        if (gameObject == null)
+        if (parentGameObject == null)
             return null;
 
         //직속 자식만 찾는 경우
         if(recursive == false)
         {
-            for(int i = 0; i < gameObject.transform.childCount; i++)
+            for(int i = 0; i < parentGameObject.transform.childCount; i++)
             {
-                Transform transform = gameObject.transform.GetChild(i);
+                Transform transform = parentGameObject.transform.GetChild(i);
                 if (string.IsNullOrEmpty(name) || transform.name == name)
                 {
                     T component = transform.GetComponent<T>();
@@ -37,7 +46,7 @@ public class Util
         }//재귀적으로 찾는 버전
         else
         {
-            foreach (T component in gameObject.GetComponentsInChildren<T>())
+            foreach (T component in parentGameObject.GetComponentsInChildren<T>())
             {
                 //이름을 입력하지 않은 경우에도 T 타입을 찾으면 리턴
                 if (string.IsNullOrEmpty(name) || component.name == name)

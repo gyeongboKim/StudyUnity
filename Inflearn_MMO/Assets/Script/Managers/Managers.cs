@@ -11,16 +11,18 @@ public class Managers : MonoBehaviour
 
     InputManager _input = new InputManager();
     ResourceManager _resource = new ResourceManager();
+    UIManager _ui = new UIManager();
 
     public static InputManager Input { get { return Instance._input; } }
     public static ResourceManager Resource { get { return Instance._resource; } }
+    public static UIManager UI  { get { return Instance._ui; } }
 
     void Start()
     {
         Init();
     }
 
-    // Update is called once per frame
+    
     void Update()
     {
         _input.OnUpdate();
@@ -31,15 +33,15 @@ public class Managers : MonoBehaviour
         //√ ±‚»≠
         if(s_instance == null)
         {
-            GameObject gameobject = GameObject.Find("@Managers");
-            if (gameobject == null)
+            GameObject managersRootObject = GameObject.Find("@Managers");
+            if (managersRootObject == null)
             {
-                gameobject = new GameObject { name = "@Managers" };
-                gameobject.AddComponent<Managers>();
+                managersRootObject = new GameObject { name = "@Managers" };
+                managersRootObject.AddComponent<Managers>();
             }
 
-            DontDestroyOnLoad(gameobject);
-            s_instance = gameobject.GetComponent<Managers>();
+            DontDestroyOnLoad(managersRootObject);
+            s_instance = managersRootObject.GetComponent<Managers>();
         }
     }
 }

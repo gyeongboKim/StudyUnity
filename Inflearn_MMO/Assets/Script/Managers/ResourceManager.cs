@@ -18,14 +18,22 @@ public class ResourceManager
             Debug.Log($"Failed to load prefab : {path}");
             return null;
         }
-        return Object.Instantiate(prefab, parent);
+
+        GameObject instantiatedObject = Object.Instantiate(prefab, parent);
+
+        //생성 시 (Clone) 문자열 제거
+        int index = instantiatedObject.name.IndexOf("(Clone)");
+        if (index > 0)
+            instantiatedObject.name = instantiatedObject.name.Substring(0, index);
+
+        return instantiatedObject;
     }
 
-    public void Destory(GameObject go)
+    public void Destroy(GameObject objectToDestroy)
     {
-        if (go == null)
+        if (objectToDestroy == null)
             return;
-        Object.Destroy(go);
+        Object.Destroy(objectToDestroy);
     }
        
 }
