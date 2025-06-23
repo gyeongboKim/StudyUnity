@@ -60,10 +60,6 @@ public class PlayerController : MonoBehaviour
         //옵저버 패턴
         Managers.Input.MouseAction -= OnMouseClicked;
         Managers.Input.MouseAction += OnMouseClicked;
-
-        //Temp
-        Managers.UI.ShowSceneUI<UI_Inventory>();
-
     }
 
     
