@@ -48,6 +48,7 @@ public class Managers : MonoBehaviour
             DontDestroyOnLoad(managersRootObject);
             s_instance = managersRootObject.GetComponent<Managers>();
 
+            s_instance._pool.Init();
             s_instance._sound.Init();
         }
     }
@@ -58,5 +59,8 @@ public class Managers : MonoBehaviour
         Input.Clear();
         Scene.Clear();
         UI.Clear(); 
+
+        //위의 Clear 함수들 중에서 Pool에 접근하거나 할 수 있기에 마지막에 배치
+        Pool.Clear();
     }
 }
