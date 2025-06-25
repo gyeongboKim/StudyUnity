@@ -11,6 +11,8 @@ public class ResourceManager
 
     public GameObject Instantiate(string path, Transform parent = null)
     {
+        
+        //original이미 있으면 바로 사용
         GameObject prefab = Load<GameObject>($"Prefabs/{path}");
 
         if(prefab == null)
@@ -19,12 +21,12 @@ public class ResourceManager
             return null;
         }
 
+        //매번 instantiate 하지 않고 poolManager에 폴링된건지 확인
+        //생성 후 (Clone) 문자열 제거
         GameObject instantiatedObject = Object.Instantiate(prefab, parent);
-
-        //생성 시 (Clone) 문자열 제거
-        int index = instantiatedObject.name.IndexOf("(Clone)");
-        if (index > 0)
-            instantiatedObject.name = instantiatedObject.name.Substring(0, index);
+        instantiatedObject.name = prefab.name;
+        
+        
 
         return instantiatedObject;
     }
@@ -33,6 +35,8 @@ public class ResourceManager
     {
         if (objectToDestroy == null)
             return;
+        // 만약 폴링이 필요한경우 -> poolmanager에 위탁
+
         Object.Destroy(objectToDestroy);
     }
        

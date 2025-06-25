@@ -5,17 +5,18 @@ using UnityEngine;
 public class Managers : MonoBehaviour 
 {
     static Managers s_instance; //유일성이 보장된다
-    static Managers Instance { get { Init(); return s_instance; } }  //유일한 매니저를 갖고온다. 프로퍼티 형식
-    // Start is called before the first frame update
+    static Managers Instance { get {  Init(); return s_instance; } }  //유일한 매니저를 갖고온다. 프로퍼티 형식
     //start 가 시작 된 경우 Init이 실행되고 혹은 start가 호출되기 이전에 Instance 생성 시 Init이 실행됨.
 
     InputManager _input = new InputManager();
+    PoolManager _pool = new PoolManager();
     ResourceManager _resource = new ResourceManager();
     SceneManagerEx _scene = new SceneManagerEx();
     SoundManager _sound = new SoundManager();
     UIManager _ui = new UIManager();
 
     public static InputManager Input { get { return Instance._input; } }
+    public static PoolManager Pool { get { return Instance._pool; } }
     public static ResourceManager Resource { get { return Instance._resource; } }
     public static SceneManagerEx Scene { get { return Instance._scene; } }
     public static SoundManager Sound { get { return Instance._sound; } }
@@ -46,6 +47,16 @@ public class Managers : MonoBehaviour
 
             DontDestroyOnLoad(managersRootObject);
             s_instance = managersRootObject.GetComponent<Managers>();
+
+            s_instance._sound.Init();
         }
+    }
+
+    public static void Clear()
+    {
+        Sound.Clear();
+        Input.Clear();
+        Scene.Clear();
+        UI.Clear(); 
     }
 }
