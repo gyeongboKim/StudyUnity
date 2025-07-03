@@ -358,6 +358,8 @@
 -r:"Library/Bee/artifacts/1900b0aE.dag/UnityEngine.UI.ref.dll"
 "Assets/Script/Controllers/CameraController.cs"
 "Assets/Script/Controllers/PlayerController.cs"
+"Assets/Script/Data/DataContents.cs"
+"Assets/Script/Managers/DataManager.cs"
 "Assets/Script/Managers/InputManager.cs"
 "Assets/Script/Managers/Managers.cs"
 "Assets/Script/Managers/Poolable.cs"

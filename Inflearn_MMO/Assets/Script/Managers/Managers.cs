@@ -8,6 +8,7 @@ public class Managers : MonoBehaviour
     static Managers Instance { get {  Init(); return s_instance; } }  //유일한 매니저를 갖고온다. 프로퍼티 형식
     //start 가 시작 된 경우 Init이 실행되고 혹은 start가 호출되기 이전에 Instance 생성 시 Init이 실행됨.
 
+    DataManager _data = new DataManager();
     InputManager _input = new InputManager();
     PoolManager _pool = new PoolManager();
     ResourceManager _resource = new ResourceManager();
@@ -15,6 +16,7 @@ public class Managers : MonoBehaviour
     SoundManager _sound = new SoundManager();
     UIManager _ui = new UIManager();
 
+    public static DataManager Data { get { return Instance._data; } }
     public static InputManager Input { get { return Instance._input; } }
     public static PoolManager Pool { get { return Instance._pool; } }
     public static ResourceManager Resource { get { return Instance._resource; } }
@@ -48,6 +50,7 @@ public class Managers : MonoBehaviour
             DontDestroyOnLoad(managersRootObject);
             s_instance = managersRootObject.GetComponent<Managers>();
 
+            s_instance._data.Init();    //data의 경우 clear가 불필요
             s_instance._pool.Init();
             s_instance._sound.Init();
         }
