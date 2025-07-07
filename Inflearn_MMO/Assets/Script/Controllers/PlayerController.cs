@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 // 1. 위치 벡터
 // 2. 방향 벡터
@@ -50,13 +51,26 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField]
-    float _speed = 10.0f;
-
+    PlayerStat _stat;
     Vector3 _destPos;
+
+    Texture2D attackCursor;
+    Texture2D moveCursor;
+
+    enum CursorType
+    {
+        None,
+        Attack,
+        Move,
+    }
+
+    CursorType _cursorType = CursorType.None;
 
     void Start()
     {
+        attackCursor = Managers.Resource.Load<Texture2D>("Textures/Cursor/Cursor_Attack");
+        moveCursor = Managers.Resource.Load<Texture2D>("Textures/Cursor/Cursor_Move");
+        _stat = gameObject.GetComponent<PlayerStat>();
         //옵저버 패턴
         Managers.Input.MouseAction -= OnMouseClicked;
         Managers.Input.MouseAction += OnMouseClicked;
@@ -69,6 +83,7 @@ public class PlayerController : MonoBehaviour
         Idle,
         Die,
         Moving,
+        Skill,      //atack, buff, 
     }
 
     PlayerState _state = PlayerState.Idle;
@@ -85,24 +100,35 @@ public class PlayerController : MonoBehaviour
         //방향과 크기를 갖는 벡터 추출
         Vector3 dir = _destPos - transform.position;
         //목적지에 도달한 경우 (float 두 값을 뺄셈을 하기 때문에 오차범위가 항상 존재하여 아주 작은 값을 이용)
-        if (dir.magnitude < 0.0001f)
+        if (dir.magnitude < 0.1f)
         {
             _state = PlayerState.Idle;
         }
         else
         {
+            NavMeshAgent nma = gameObject.GetOrAddComponent<NavMeshAgent>();
+            //nma.CalculatePath()
+
             //moveDest = _speed*Time.deltaTime 값이 dir.magnitude를 넘어버려 목적지 부근에서 버벅임 발생
             //해결 : Clamp -> value가 min보다 작으면 min값을, max보다 크면 max값을 덮어줌.(min 과 max 사이값을 보장해줌)
-            float moveDist = Mathf.Clamp(_speed * Time.deltaTime, 0, dir.magnitude);
+            float moveDist = Mathf.Clamp(_stat.MoveSpeed * Time.deltaTime, 0, dir.magnitude);
             //크기가 1인 방향벡터의 방향으로 속도*시간 만큼 움직임
-            transform.position += dir.normalized * moveDist;
+            nma.Move(dir.normalized * moveDist);
+
+            Debug.DrawRay(transform.position + Vector3.up * 0.7f, dir.normalized, Color.green);
+            if (Physics.Raycast(transform.position + Vector3.up * 0.7f, dir, 1.0f, LayerMask.GetMask("Block")))
+            {
+                _state = PlayerState.Idle;
+                return;
+            }
+
             //_destPos 방향을 바라봄
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), 20 * Time.deltaTime);
             //transform.LookAt(_destPos);
         }
         //애니메이션 처리
         Animator anim = GetComponent<Animator>();
-        anim.SetFloat("speed", _speed);
+        anim.SetFloat("speed", _stat.MoveSpeed);
 
     }
     void UpdateDie()
@@ -112,7 +138,7 @@ public class PlayerController : MonoBehaviour
     
     void Update()
     {
-       
+        UpdateMouseCursor();
         switch(_state)
         {
             case PlayerState.Idle:
@@ -129,6 +155,38 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    void UpdateMouseCursor()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        //Debug.DrawRay(Camera.main.transform.position, ray.direction * 100.0f, Color.red, 1.0f);
+        //LayerMask mask = LayerMask.GetMask("Wall");
+
+        RaycastHit hit;
+        //wall
+        if (Physics.Raycast(ray, out hit, 100.0f, _mask))
+        {
+            if (hit.collider.gameObject.layer == (int)Define.Layer.Monster)
+            {
+                if(_cursorType != CursorType.Attack)
+                {
+                    Cursor.SetCursor(attackCursor, new Vector2(attackCursor.width / 5, 0), CursorMode.Auto);
+                    _cursorType = CursorType.Attack;
+                }
+
+            }
+            else
+            {
+                if(_cursorType != CursorType.Move)
+                {
+                    Cursor.SetCursor(moveCursor, new Vector2(attackCursor.width / 3, 0), CursorMode.Auto);
+                    _cursorType = CursorType.Move; 
+                }
+                
+            }
+        }
+
+    }
     // 키보드 이동
     //void OnKeyboard()
     //{
@@ -158,7 +216,8 @@ public class PlayerController : MonoBehaviour
 
     //    _moveToDest = false;
     //}
-    
+    int _mask = (1 << (int)Define.Layer.Ground) | (1 << (int)Define.Layer.Monster);
+
     void OnMouseClicked(Define.MouseEvent mouseEvent)
     {
         if (_state == PlayerState.Die)
@@ -166,16 +225,26 @@ public class PlayerController : MonoBehaviour
 
         //마우스 클릭 지점에 ray
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Debug.DrawRay(Camera.main.transform.position, ray.direction * 100.0f, Color.red, 1.0f);
+
+        //Debug.DrawRay(Camera.main.transform.position, ray.direction * 100.0f, Color.red, 1.0f);
         //LayerMask mask = LayerMask.GetMask("Wall");
         
         RaycastHit hit;
         //wall
-        if (Physics.Raycast(ray, out hit, 100.0f, LayerMask.GetMask("Wall")))    
+        if (Physics.Raycast(ray, out hit, 100.0f, _mask))    
         {
             //클릭한 지점까지 이동
             _destPos = hit.point;
             _state = PlayerState.Moving;
+
+            if(hit.collider.gameObject.layer == (int)Define.Layer.Monster)
+            {
+                Debug.Log("Monster Clicked!!");
+            }
+            else
+            {
+                Debug.Log("Ground Clicked!!");
+            }
         }
     }
 
