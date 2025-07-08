@@ -8,10 +8,6 @@ public class UI_Inventory : UI_Scene
     {
         GridPanel,
     }
-        void Start()
-    {
-        Init();
-    }
 
     public override void Init()
     {

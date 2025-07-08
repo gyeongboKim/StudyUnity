@@ -10,6 +10,7 @@ public class InputManager
     public Action <Define.MouseEvent> MouseAction = null;
 
     bool _pressed = false;
+    float _pressedTime = 0;
 
     public void OnUpdate()
     {
@@ -31,6 +32,11 @@ public class InputManager
             //마우스를 누르고 있을 때
             if(Input.GetMouseButton(0))
             {
+                if (!_pressed)
+                {
+                    MouseAction.Invoke(Define.MouseEvent.PointterDown);
+                    _pressedTime = Time.time;
+                }
                 MouseAction.Invoke(Define.MouseEvent.Press);
                 _pressed = true;
                 
@@ -40,10 +46,14 @@ public class InputManager
             {
                 //한번이라도 pressed가 되었다면
                 if (_pressed)
+                {
+                    if (Time.time < _pressedTime + 0.2f)
+                        MouseAction.Invoke(Define.MouseEvent.Click);
                     //클릭으로 간주
-                    MouseAction.Invoke(Define.MouseEvent.Click);
+                    MouseAction.Invoke(Define.MouseEvent.PointterUp);
+                }
                 _pressed = false;
-                
+                _pressedTime = 0;
             }
         }
     }

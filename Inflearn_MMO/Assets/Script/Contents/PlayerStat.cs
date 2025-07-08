@@ -17,7 +17,8 @@ public class PlayerStat : Stat
         _level = 1;
         _hp = 100;
         _maxHp = 100;
-        _defence = 5;
+        _attack = 15;
+        _defense = 5;
         _moveSpeed = 5.0f;
 
         _exp = 0;

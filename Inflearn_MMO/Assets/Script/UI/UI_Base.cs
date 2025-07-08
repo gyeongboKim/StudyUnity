@@ -10,8 +10,12 @@ public abstract class UI_Base : MonoBehaviour
 {
     //UI 오브젝트를 저장하는 딕셔너리
     protected Dictionary<Type, UnityEngine.Object[]> _objects = new Dictionary<Type, UnityEngine.Object[]>();
-
     public abstract void Init();
+
+    private void Start()
+    {
+        Init();
+    }
 
     //핵심 바인딩 및 검색 로직으로 
     //열거형의 이름을 기반으로 특정 타입 T 의 UI 요소를 바인딩함.

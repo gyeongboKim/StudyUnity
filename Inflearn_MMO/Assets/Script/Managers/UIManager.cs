@@ -78,6 +78,21 @@ public class UIManager
         return Util.GetOrAddComponent<T>(subItemObject);
     }
 
+    public T MakeWorldSpaceUI<T>(Transform parent = null, string name = null) where T : UI_Base
+    {
+        if (string.IsNullOrEmpty(name))
+            name = typeof(T).Name;
+        GameObject worldSpaceUI = Managers.Resource.Instantiate($"UI/WorldSpace/{name}");
+
+        if (parent != null)
+            worldSpaceUI.transform.SetParent(parent);
+
+        Canvas canvas = worldSpaceUI.GetOrAddComponent<Canvas>();
+        canvas.renderMode = RenderMode.WorldSpace;
+        canvas.worldCamera = Camera.main;
+
+        return Util.GetOrAddComponent<T>(worldSpaceUI);
+    }
 
 
     public void ClosePopupUI(UI_Popup popup)

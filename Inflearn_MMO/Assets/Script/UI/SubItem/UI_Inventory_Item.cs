@@ -12,11 +12,7 @@ public class UI_Inventory_Item : UI_Base
     }
 
     string _name;
-    void Start()
-    {
-        Init();
-    }
-
+    
     public override void Init()
     {
         Bind<GameObject>(typeof(GameObjects));

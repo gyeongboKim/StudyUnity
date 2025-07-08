@@ -67,6 +67,8 @@ public class GameScene : BaseScene
         Managers.UI.ShowSceneUI<UI_Inventory>();
 
         Dictionary<int, Data.Stat> dict = Managers.Data.StatDict;
+
+        gameObject.GetOrAddComponent<CursorController>();
     }
 
     //IEnumerator CoStopExplode(float seconds)

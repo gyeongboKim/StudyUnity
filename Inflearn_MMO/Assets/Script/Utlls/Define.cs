@@ -32,8 +32,10 @@ public class Define
 
     public enum MouseEvent
     {
-        Press,
-        Click,
+        Press,        //마우스 버튼을 누르고 있는 동안 지속적으로 발생 
+        PointterDown, //마우스 버튼을 누르는 순간(1회)
+        PointterUp,   //마우스 버튼을 떼는 순간(1회)  
+        Click,        //마우스 버튼을 눌렀다가 일정 시간 내에 떼는 순간(1회, Dwon/Up 조합)  
     }
     public enum CameraMode
     { 

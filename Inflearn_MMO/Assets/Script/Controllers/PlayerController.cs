@@ -51,58 +51,97 @@ using UnityEngine.AI;
 
 public class PlayerController : MonoBehaviour
 {
-    PlayerStat _stat;
-    Vector3 _destPos;
-
-    Texture2D attackCursor;
-    Texture2D moveCursor;
-
-    enum CursorType
-    {
-        None,
-        Attack,
-        Move,
-    }
-
-    CursorType _cursorType = CursorType.None;
-
-    void Start()
-    {
-        attackCursor = Managers.Resource.Load<Texture2D>("Textures/Cursor/Cursor_Attack");
-        moveCursor = Managers.Resource.Load<Texture2D>("Textures/Cursor/Cursor_Move");
-        _stat = gameObject.GetComponent<PlayerStat>();
-        //옵저버 패턴
-        Managers.Input.MouseAction -= OnMouseClicked;
-        Managers.Input.MouseAction += OnMouseClicked;
-    }
-
-    
 
     public enum PlayerState
     {
         Idle,
-        Die,
         Moving,
         Skill,      //atack, buff, 
+        Die,
     }
 
+    PlayerStat _stat;
+    Vector3 _destPos;
+     
+    [SerializeField]
     PlayerState _state = PlayerState.Idle;
 
-  
+    public PlayerState State
+    {
+        get { return _state; }
+        set
+        {
+            _state = value;
+
+            Animator anim = GetComponent<Animator>();
+            switch (_state)
+            {
+                case PlayerState.Idle:
+                    anim.CrossFade("Idle", 0.15f);
+                    break;
+                case PlayerState.Moving:
+                    anim.CrossFade("OneHandedRun", 0.15f);
+                    #region Transition 이용
+                    // Unity엔진에서 제공하는 Parameter와 Transition 이용 시
+                    //anim.SetFloat("speed", _stat.MoveSpeed);
+                    //anim.SetBool("attack", false);
+
+                    //Parameter 한개만 이용 시
+                    //anim.SetInt("state", (int)_state);
+                    #endregion
+                    break;
+                case PlayerState.Skill:
+                    anim.CrossFade("OneHandedAttack", 0.15f, -1, 0);
+                    break;
+                case PlayerState.Die:
+                    break;
+            }
+        }
+    }
+      
+    int _mask = (1 << (int)Define.Layer.Ground) | (1 << (int)Define.Layer.Monster);
+
+    GameObject _lockTarget;
+
+    void Start()
+    {
+
+        _stat = gameObject.GetComponent<PlayerStat>();
+        //옵저버 패턴
+        Managers.Input.MouseAction -= OnMouseEvent;
+        Managers.Input.MouseAction += OnMouseEvent;
+
+        Managers.UI.MakeWorldSpaceUI<UI_HPBar>(transform);
+    }
+     
     void UpdateIdle()
     {
-        Animator anim = GetComponent<Animator>();
-        anim.SetFloat("speed", 0);
+        
 
     }
+
     void UpdateMoving()
     {
+        //몬스터가 내 사정거리보다 가까우면 공격
+        //타겟 체크
+        if(_lockTarget != null)
+        {
+            _destPos = _lockTarget.transform.position;
+            float distance = (_destPos - transform.position).magnitude;
+
+            if(distance < 1)
+            {
+                State = PlayerState.Skill;
+                return;
+            }
+        }
+
         //방향과 크기를 갖는 벡터 추출
         Vector3 dir = _destPos - transform.position;
         //목적지에 도달한 경우 (float 두 값을 뺄셈을 하기 때문에 오차범위가 항상 존재하여 아주 작은 값을 이용)
         if (dir.magnitude < 0.1f)
         {
-            _state = PlayerState.Idle;
+            State = PlayerState.Idle;
         }
         else
         {
@@ -118,28 +157,66 @@ public class PlayerController : MonoBehaviour
             Debug.DrawRay(transform.position + Vector3.up * 0.7f, dir.normalized, Color.green);
             if (Physics.Raycast(transform.position + Vector3.up * 0.7f, dir, 1.0f, LayerMask.GetMask("Block")))
             {
-                _state = PlayerState.Idle;
+                //마우스를 누르고 있는 경우 Idle로 바뀌지 않게 함
+                if (Input.GetMouseButton(0) == false)
+                    State = PlayerState.Idle;
                 return;
-            }
 
+            }
             //_destPos 방향을 바라봄
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), 20 * Time.deltaTime);
             //transform.LookAt(_destPos);
         }
-        //애니메이션 처리
-        Animator anim = GetComponent<Animator>();
-        anim.SetFloat("speed", _stat.MoveSpeed);
 
+        ////애니메이션 처리
+        //Animator anim = GetComponent<Animator>();
+        ////현재 게임 상태에 대한 정보를 넘겨줌
+        //anim.SetFloat("speed", _stat.MoveSpeed);
     }
+     
+    void UpdateSkill()
+    {
+        //타겟을 바라보도록 함
+        //1. 타겟이 있는지 확인
+        if(_lockTarget != null)
+        {
+            // 타겟 방향 벡터 계산 후 타겟 방향벡터로의 회전값 quat 생성
+            Vector3 dir = _lockTarget.transform.position - transform.position;
+            Quaternion quat = Quaternion.LookRotation(dir);
+            // 타겟을 바라보도록 회전(부드럽게 움직이도록 Lerp 사용)
+            transform.rotation = Quaternion.Lerp(transform.rotation, quat, 20 * Time.deltaTime);
+        }
+    }
+
     void UpdateDie()
     {
         //HP 개념 추가 시 작성
     }
-    
+
+    public void OnHitEvent()
+    {
+        if(_lockTarget != null)
+        {
+            // TODO
+            Stat targetStat = _lockTarget.GetComponent<Stat>();
+            Stat myStat = gameObject.GetComponent<PlayerStat>();
+            int damage = Mathf.Max(0, myStat.Attack - targetStat.Defense);
+            Debug.Log(damage);
+            targetStat.Hp -= damage;
+        }
+        if (_stopSkill)
+        {
+            State = PlayerState.Idle;
+        }
+        else
+        {
+            State = PlayerState.Skill;
+        }
+    }
+
     void Update()
     {
-        UpdateMouseCursor();
-        switch(_state)
+        switch (State)
         {
             case PlayerState.Idle:
                 UpdateIdle();
@@ -150,43 +227,13 @@ public class PlayerController : MonoBehaviour
             case PlayerState.Moving:
                 UpdateMoving();
                 break;
+            case PlayerState.Skill:
+                UpdateSkill();
+                break;
+
         }
-
-
     }
 
-    void UpdateMouseCursor()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        //Debug.DrawRay(Camera.main.transform.position, ray.direction * 100.0f, Color.red, 1.0f);
-        //LayerMask mask = LayerMask.GetMask("Wall");
-
-        RaycastHit hit;
-        //wall
-        if (Physics.Raycast(ray, out hit, 100.0f, _mask))
-        {
-            if (hit.collider.gameObject.layer == (int)Define.Layer.Monster)
-            {
-                if(_cursorType != CursorType.Attack)
-                {
-                    Cursor.SetCursor(attackCursor, new Vector2(attackCursor.width / 5, 0), CursorMode.Auto);
-                    _cursorType = CursorType.Attack;
-                }
-
-            }
-            else
-            {
-                if(_cursorType != CursorType.Move)
-                {
-                    Cursor.SetCursor(moveCursor, new Vector2(attackCursor.width / 3, 0), CursorMode.Auto);
-                    _cursorType = CursorType.Move; 
-                }
-                
-            }
-        }
-
-    }
     // 키보드 이동
     //void OnKeyboard()
     //{
@@ -216,35 +263,66 @@ public class PlayerController : MonoBehaviour
 
     //    _moveToDest = false;
     //}
-    int _mask = (1 << (int)Define.Layer.Ground) | (1 << (int)Define.Layer.Monster);
 
-    void OnMouseClicked(Define.MouseEvent mouseEvent)
+    bool _stopSkill = false;
+     
+    void OnMouseEvent(Define.MouseEvent mouseEvent)
     {
-        if (_state == PlayerState.Die)
-            return;
+        switch (State)
+        {
+            case PlayerState.Idle:
+                OnMouseEvent_IdleRun(mouseEvent);
+                break;
+            case PlayerState.Moving:
+                OnMouseEvent_IdleRun(mouseEvent);
+                break;
+            case PlayerState.Skill:
+                {
+                    if (mouseEvent == Define.MouseEvent.PointterUp)
+                        _stopSkill = true;
+                }
+                break;
+        }
 
+    }
+
+    void OnMouseEvent_IdleRun(Define.MouseEvent mouseEvent) 
+    {
         //마우스 클릭 지점에 ray
+        RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
+        bool raycastHit = Physics.Raycast(ray, out hit, 100.0f, _mask);
         //Debug.DrawRay(Camera.main.transform.position, ray.direction * 100.0f, Color.red, 1.0f);
         //LayerMask mask = LayerMask.GetMask("Wall");
-        
-        RaycastHit hit;
-        //wall
-        if (Physics.Raycast(ray, out hit, 100.0f, _mask))    
-        {
-            //클릭한 지점까지 이동
-            _destPos = hit.point;
-            _state = PlayerState.Moving;
 
-            if(hit.collider.gameObject.layer == (int)Define.Layer.Monster)
-            {
-                Debug.Log("Monster Clicked!!");
-            }
-            else
-            {
-                Debug.Log("Ground Clicked!!");
-            }
+        switch (mouseEvent)
+        {
+            case Define.MouseEvent.PointterDown:
+                {
+                    if (raycastHit)
+                    {
+                        _destPos = hit.point;
+                        State = PlayerState.Moving;
+                        _stopSkill = false;
+
+                        if (hit.collider.gameObject.layer == (int)Define.Layer.Monster)
+                            _lockTarget = hit.collider.gameObject;
+                        else
+                            _lockTarget = null;
+                    }
+                }
+                break;
+            case Define.MouseEvent.Press:
+                {
+                    if (_lockTarget == null && raycastHit)
+                        _destPos = hit.point; 
+                }
+                break;
+            case Define.MouseEvent.PointterUp:
+                {
+                    _stopSkill = true;
+                }
+                break;
         }
     }
 

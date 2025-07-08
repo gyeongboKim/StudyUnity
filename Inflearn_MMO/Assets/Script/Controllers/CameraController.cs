@@ -8,7 +8,7 @@ public class CameraController : MonoBehaviour
     Define.CameraMode _mode = Define.CameraMode.QuarterView;
 
     [SerializeField]
-    Vector3 _delta = new Vector3(0.0f, 6.0f, -5.0f);
+    Vector3 _delta = new Vector3(0.0f, 5.0f, -5.0f);
 
     //inspector에서 적용
     [SerializeField]
@@ -25,7 +25,7 @@ public class CameraController : MonoBehaviour
         {
             RaycastHit hit;
             //Raycast 가 벽에 부딪힌 경우 
-            if(Physics.Raycast(_player.transform.position, _delta, out hit, _delta.magnitude, LayerMask.GetMask("Wall")))
+            if(Physics.Raycast(_player.transform.position, _delta, out hit, _delta.magnitude, LayerMask.GetMask("Block")))
             {
                 //카메라를 캐릭터가 보이게 확대. 
                 //dist 는 벽에 부딪힌 지점 좌표와 플레이어 좌표 사이의 벡터 * 0.8
