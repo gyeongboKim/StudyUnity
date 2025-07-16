@@ -4,6 +4,14 @@ using UnityEngine;
 
 public class Define
 {
+    public enum WorldObject
+    { 
+        Unknown,
+        Player,
+        Monster,
+    }
+
+
     public enum Layer
     {
         Monster = 8,
@@ -40,5 +48,16 @@ public class Define
     public enum CameraMode
     { 
         QuarterView,
+    }
+
+
+
+    public enum State
+    {
+        Idle,
+        Moving,
+        Skill,      //atack, buff, 
+        GetHit,
+        Die,
     }
 }

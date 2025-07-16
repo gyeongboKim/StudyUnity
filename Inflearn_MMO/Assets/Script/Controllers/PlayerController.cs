@@ -49,132 +49,88 @@ using UnityEngine.AI;
 
 //transform.rotation
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : BaseController
 {
-
-    public enum PlayerState
-    {
-        Idle,
-        Moving,
-        Skill,      //atack, buff, 
-        Die,
-    }
-
+    //이후 서버가 생기는 경우
+    //자신이 플레이 하는 플레이어인지, 다른 플레이어인지 분기점 필요
     PlayerStat _stat;
-    Vector3 _destPos;
-     
-    [SerializeField]
-    PlayerState _state = PlayerState.Idle;
 
-    public PlayerState State
-    {
-        get { return _state; }
-        set
-        {
-            _state = value;
+    bool _stopSkill = false;
 
-            Animator anim = GetComponent<Animator>();
-            switch (_state)
-            {
-                case PlayerState.Idle:
-                    anim.CrossFade("Idle", 0.15f);
-                    break;
-                case PlayerState.Moving:
-                    anim.CrossFade("OneHandedRun", 0.15f);
-                    #region Transition 이용
-                    // Unity엔진에서 제공하는 Parameter와 Transition 이용 시
-                    //anim.SetFloat("speed", _stat.MoveSpeed);
-                    //anim.SetBool("attack", false);
+    float _attackRange = 2;
 
-                    //Parameter 한개만 이용 시
-                    //anim.SetInt("state", (int)_state);
-                    #endregion
-                    break;
-                case PlayerState.Skill:
-                    anim.CrossFade("OneHandedAttack", 0.15f, -1, 0);
-                    break;
-                case PlayerState.Die:
-                    break;
-            }
-        }
-    }
-      
     int _mask = (1 << (int)Define.Layer.Ground) | (1 << (int)Define.Layer.Monster);
 
-    GameObject _lockTarget;
-
-    void Start()
+    public override void Init()
     {
-
-        _stat = gameObject.GetComponent<PlayerStat>();
         //옵저버 패턴
         Managers.Input.MouseAction -= OnMouseEvent;
         Managers.Input.MouseAction += OnMouseEvent;
 
-        Managers.UI.MakeWorldSpaceUI<UI_HPBar>(transform);
-    }
-     
-    void UpdateIdle()
-    {
+        WorldObjectType = Define.WorldObject.Player;
+        _stat = gameObject.GetComponent<PlayerStat>();
+        //HP Bar 체크 및 추가
+        if (gameObject.GetComponentInChildren<UI_HPBar>() == null)
+            Managers.UI.MakeWorldSpaceUI<UI_HPBar>(transform);
+
+
         
-
     }
 
-    void UpdateMoving()
+    //protected override void UpdateIdle()
+    //{
+
+
+    //}
+
+    protected override void UpdateMoving()
     {
-        //몬스터가 내 사정거리보다 가까우면 공격
+        if (State != Define.State.Moving)
+            return;
+        //락온된 몬스터가 내 사정거리보다 가까우면 공격 상태로 변경
         //타겟 체크
         if(_lockTarget != null)
         {
             _destPos = _lockTarget.transform.position;
-            float distance = (_destPos - transform.position).magnitude;
+            float distanceToLockTarget = (_destPos - transform.position).magnitude;
 
-            if(distance < 1)
+            if(distanceToLockTarget <=  _attackRange )
             {
-                State = PlayerState.Skill;
+                State = Define.State.Skill;
                 return;
             }
         }
 
+        //이동
         //방향과 크기를 갖는 벡터 추출
         Vector3 dir = _destPos - transform.position;
+        dir.y = 0;          //몬스터 위로 올라가는 버그 방지
         //목적지에 도달한 경우 (float 두 값을 뺄셈을 하기 때문에 오차범위가 항상 존재하여 아주 작은 값을 이용)
         if (dir.magnitude < 0.1f)
         {
-            State = PlayerState.Idle;
+            State = Define.State.Idle;
         }
         else
-        {
-            NavMeshAgent nma = gameObject.GetOrAddComponent<NavMeshAgent>();
-            //nma.CalculatePath()
-
-            //moveDest = _speed*Time.deltaTime 값이 dir.magnitude를 넘어버려 목적지 부근에서 버벅임 발생
-            //해결 : Clamp -> value가 min보다 작으면 min값을, max보다 크면 max값을 덮어줌.(min 과 max 사이값을 보장해줌)
-            float moveDist = Mathf.Clamp(_stat.MoveSpeed * Time.deltaTime, 0, dir.magnitude);
-            //크기가 1인 방향벡터의 방향으로 속도*시간 만큼 움직임
-            nma.Move(dir.normalized * moveDist);
-
-            Debug.DrawRay(transform.position + Vector3.up * 0.7f, dir.normalized, Color.green);
+        { //Debug.DrawRay(transform.position + Vector3.up * 0.7f, dir.normalized, Color.green);
             if (Physics.Raycast(transform.position + Vector3.up * 0.7f, dir, 1.0f, LayerMask.GetMask("Block")))
             {
                 //마우스를 누르고 있는 경우 Idle로 바뀌지 않게 함
                 if (Input.GetMouseButton(0) == false)
-                    State = PlayerState.Idle;
+                    State = Define.State.Idle;
                 return;
 
             }
+            //moveDist = _speed * Time.deltaTime 값이 dir.magnitude를 넘어버려 목적지 부근에서 버벅임 발생
+            //해결 : Clamp -> value가 min보다 작으면 min값을, max보다 크면 max값을 덮어줌.(min 과 max 사이값을 보장해줌)
+            float moveDist = Mathf.Clamp(_stat.MoveSpeed * Time.deltaTime, 0, dir.magnitude);
+            transform.position += dir.normalized * moveDist;
             //_destPos 방향을 바라봄
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), 20 * Time.deltaTime);
             //transform.LookAt(_destPos);
-        }
-
-        ////애니메이션 처리
-        //Animator anim = GetComponent<Animator>();
-        ////현재 게임 상태에 대한 정보를 넘겨줌
-        //anim.SetFloat("speed", _stat.MoveSpeed);
+        } 
     }
-     
-    void UpdateSkill()
+
+    protected override void UpdateSkill()
     {
         //타겟을 바라보도록 함
         //1. 타겟이 있는지 확인
@@ -188,52 +144,13 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void UpdateDie()
-    {
-        //HP 개념 추가 시 작성
-    }
-
-    public void OnHitEvent()
-    {
-        if(_lockTarget != null)
-        {
-            // TODO
-            Stat targetStat = _lockTarget.GetComponent<Stat>();
-            Stat myStat = gameObject.GetComponent<PlayerStat>();
-            int damage = Mathf.Max(0, myStat.Attack - targetStat.Defense);
-            Debug.Log(damage);
-            targetStat.Hp -= damage;
-        }
-        if (_stopSkill)
-        {
-            State = PlayerState.Idle;
-        }
-        else
-        {
-            State = PlayerState.Skill;
-        }
-    }
-
-    void Update()
-    {
-        switch (State)
-        {
-            case PlayerState.Idle:
-                UpdateIdle();
-                break;
-            case PlayerState.Die:
-                UpdateDie();
-                break;
-            case PlayerState.Moving:
-                UpdateMoving();
-                break;
-            case PlayerState.Skill:
-                UpdateSkill();
-                break;
-
-        }
-    }
-
+    #region UpdateDie()
+    //protected override void UpdateDie()
+    //{
+    //    //HP 개념 추가 시 작성
+    //}
+    #endregion
+    #region OnKeyboard()
     // 키보드 이동
     //void OnKeyboard()
     //{
@@ -263,20 +180,45 @@ public class PlayerController : MonoBehaviour
 
     //    _moveToDest = false;
     //}
+    #endregion
+    #region OnStatechanged()
+    //protected override void OnStateChanged(Define.State state)
+    //{
+    //    base.OnStateChanged(state);
+    //}
+    #endregion
 
-    bool _stopSkill = false;
-     
+    public void OnHitEvent()
+    {
+        
+        if (_lockTarget != null)
+        {
+            // TODO
+            Stat targetStat = _lockTarget.GetComponent<Stat>();
+            targetStat.OnAttacked(_stat);
+        }
+        if (_stopSkill)
+        {
+            State = Define.State.Idle;
+        }
+        else
+        {
+            State = Define.State.Skill;
+        }
+    }
+
     void OnMouseEvent(Define.MouseEvent mouseEvent)
     {
         switch (State)
         {
-            case PlayerState.Idle:
+            //MouseEvent 발생 시 State가 Idle 혹은 Moving인 경우 OnMouseEvent_IdleRun 호출
+            case Define.State.Idle:
                 OnMouseEvent_IdleRun(mouseEvent);
                 break;
-            case PlayerState.Moving:
+            case Define.State.Moving:
                 OnMouseEvent_IdleRun(mouseEvent);
                 break;
-            case PlayerState.Skill:
+            case Define.State.Skill:
                 {
                     if (mouseEvent == Define.MouseEvent.PointterUp)
                         _stopSkill = true;
@@ -302,9 +244,10 @@ public class PlayerController : MonoBehaviour
                     if (raycastHit)
                     {
                         _destPos = hit.point;
-                        State = PlayerState.Moving;
+                        State = Define.State.Moving;
                         _stopSkill = false;
 
+                        //누르는 순간에 몬스터인지 판단. 몬스터의 경우 lockTarget 지정
                         if (hit.collider.gameObject.layer == (int)Define.Layer.Monster)
                             _lockTarget = hit.collider.gameObject;
                         else
@@ -326,4 +269,28 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public override void PlayAnimationForState(Define.State state)
+    {
+        Animator anim = GetComponent<Animator>();
+        if (anim == null) return;
+
+        switch (state)
+        {
+            case Define.State.Idle:
+                anim.CrossFade("Idle", 0.15f);
+                break;
+            case Define.State.Moving:
+                anim.CrossFade("OneHandedRun", 0.15f);
+                break;
+            case Define.State.Skill:
+                anim.CrossFade("OneHandedAttack", 0.15f, -1, 0);
+                break;
+            case Define.State.GetHit:
+                //GetHit 애니메이션 추가
+                break;
+            case Define.State.Die:
+                // Die 애니메이션 추가
+                break;
+        }
+    }
 }

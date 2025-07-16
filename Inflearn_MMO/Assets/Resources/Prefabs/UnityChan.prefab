@@ -2529,7 +2529,7 @@ GameObject:
   - component: {fileID: 8173066859838086677}
   m_Layer: 0
   m_Name: UnityChan
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2564,7 +2564,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: dd42debad9732644e920d58b2592ae04, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_WarningMessage: 
@@ -2583,6 +2583,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0434f798e63bcc41b22f65fdb762421, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _destPos: {x: 0, y: 0, z: 0}
+  _lockTarget: {fileID: 0}
   _state: 0
 --- !u!54 &3489334013259020261
 Rigidbody:
@@ -2643,7 +2645,7 @@ MonoBehaviour:
   _hp: 0
   _maxHp: 0
   _attack: 0
-  _defence: 0
+  _defense: 0
   _moveSpeed: 0
   _exp: 0
   _gold: 0

@@ -12,7 +12,9 @@ public class CameraController : MonoBehaviour
 
     //inspector에서 적용
     [SerializeField]
-    GameObject _player = null;  
+    GameObject _player = null;
+
+    public void SetPlayer(GameObject player ) {  _player = player; }
 
     void Start()
     {
@@ -23,9 +25,13 @@ public class CameraController : MonoBehaviour
     {
         if (_mode == Define.CameraMode.QuarterView)
         {
+            if (_player.IsValid() == false) 
+            {
+                return;
+            }
             RaycastHit hit;
             //Raycast 가 벽에 부딪힌 경우 
-            if(Physics.Raycast(_player.transform.position, _delta, out hit, _delta.magnitude, LayerMask.GetMask("Block")))
+            if(Physics.Raycast(_player.transform.position, _delta, out hit, _delta.magnitude, 1 << (int)Define.Layer.Block))
             {
                 //카메라를 캐릭터가 보이게 확대. 
                 //dist 는 벽에 부딪힌 지점 좌표와 플레이어 좌표 사이의 벡터 * 0.8

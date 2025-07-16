@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Stat : MonoBehaviour
 {
+
     [SerializeField]
     protected int _level;
     [SerializeField]
@@ -33,5 +34,32 @@ public class Stat : MonoBehaviour
         _defense = 5;
         _moveSpeed = 5.0f;
     }
+
+    public virtual void OnAttacked(Stat attackerStat)
+    {
+        int damage = Mathf.Max(0, attackerStat.Attack - Defense);
+        Hp -= damage;
+
+        if (Hp <= 0)
+        {
+            Hp = 0;
+            OnDead(attackerStat);
+        }
+
+
+    }
+
+    protected virtual void OnDead(Stat attackerStat)
+    {
+
+        PlayerStat playerStat = attackerStat as PlayerStat;
+        if (playerStat != null)
+        {
+            playerStat.Exp += 6;
+        }
+
+        Managers.Game.Despawn(gameObject);
+    }
+
 }
 
