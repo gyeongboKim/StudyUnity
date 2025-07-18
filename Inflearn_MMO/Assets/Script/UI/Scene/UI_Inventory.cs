@@ -9,6 +9,7 @@ public class UI_Inventory : UI_Scene
         GridPanel,
     }
 
+    // Init()은 바인딩 및 이벤트 등록만 담당하게 함.
     public override void Init()
     {
         base.Init();

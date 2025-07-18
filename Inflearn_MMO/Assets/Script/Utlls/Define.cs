@@ -21,9 +21,10 @@ public class Define
     public enum Scene
     {
         Unknown,
-        Login,
-        Lobby,
-        Game,
+        LobbyScene,
+        CharacterScene,
+        LoadingScene,
+        GameScene,
 
     }
     public enum Sound
@@ -34,6 +35,8 @@ public class Define
     }
     public enum UIEvent
     {
+        Enter,
+        Exit,
         Click,
         Drag,
     }

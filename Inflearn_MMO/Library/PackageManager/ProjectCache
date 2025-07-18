@@ -5,16 +5,16 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 638859156764768810
-    m_Hash: 2076104770
+      ticks: 638882703727081706
+    m_Hash: 375968450
   m_LockFileStatus:
     m_FilePath: C:/Users/user/Documents/GitHub/StudyUnity/Inflearn_MMO/Packages/packages-lock.json
     m_PathExists: 1
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 638859156764876356
-    m_Hash: 883499119
+      ticks: 638882703727104423
+    m_Hash: 2944796131
 m_EmbeddedPackageManifests:
   m_ManifestsStatus: {}
 m_LocalPackages:
@@ -3403,6 +3403,7 @@ m_ResolvedPackages:
     - 1.12.5
     - 1.13.0
     - 1.14.0
+    - 1.15.1
     compatible:
     - 1.6.0
     - 1.7.0
@@ -3419,6 +3420,7 @@ m_ResolvedPackages:
     - 1.12.5
     - 1.13.0
     - 1.14.0
+    - 1.15.1
     verified: 1.6.0
   dependencies:
   - name: com.unity.modules.androidjni

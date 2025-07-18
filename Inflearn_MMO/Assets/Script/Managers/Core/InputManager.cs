@@ -14,7 +14,10 @@ public class InputManager
 
     public void OnUpdate()
     {
-
+        if (EventSystem.current == null)
+        {
+            return;
+        }
         if (EventSystem.current.IsPointerOverGameObject())
         {
             return;

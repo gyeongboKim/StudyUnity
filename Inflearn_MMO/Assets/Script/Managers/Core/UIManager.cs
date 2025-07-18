@@ -36,6 +36,7 @@ public class UIManager
             canvas.sortingOrder = 0;
         }
     }
+
     //name = prefab 에서의 이름, T의 이름 그대로 사용하되(대부분의 경우 name과 T의 이름을 맞춰줌) 옵션으로 name을 추가하도록
     public T ShowPopupUI <T>(string name = null) where T : UI_Popup
     {

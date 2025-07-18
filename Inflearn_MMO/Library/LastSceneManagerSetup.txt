@@ -1,5 +1,6 @@
 sceneSetups:
-- path: Assets/Scenes/Game.unity
+- path: Assets/InfinityPBR - Magic Pig Games/_Demo Scenes/Medieval Environment -
+    Demo 2.unity
   isLoaded: 1
   isActive: 1
   isSubScene: 0

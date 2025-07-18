@@ -28,6 +28,7 @@ public class UI_Button : UI_Popup
         ItemIcon,
     }
 
+    // Init()은 바인딩 및 이벤트 등록만 담당하게 함.
     public override void Init()
     {
         base.Init();
@@ -43,8 +44,8 @@ public class UI_Button : UI_Popup
         //Extension 메서드 활용
         GetButton((int)Buttons.PointButton).gameObject.BindEvent(OnButtonClicked);
 
-        GameObject targetGameObject = GetImage((int)Images.ItemIcon).gameObject;
-        BindEvent(targetGameObject, ((PointerEventData data) => { targetGameObject.transform.position = data.position; }), Define.UIEvent.Drag);
+        //GameObject targetGameObject = GetImage((int)Images.ItemIcon).gameObject;
+        //BindEvent(targetGameObject, ((PointerEventData data) => { targetGameObject.transform.position = data.position; }), Define.UIEvent.Drag);
 
     }
 

@@ -14,6 +14,7 @@ public interface ILoader<Key, Value>
 public class DataManager 
 {
     public Dictionary<int, Data.Stat> StatDict { get; private set; } = new Dictionary<int, Data.Stat>();
+    public string NextSceneName;
 
     public void Init()
     {

@@ -61,10 +61,9 @@ public class GameScene : BaseScene
     protected override void Init()
     {
         base.Init();
+        SceneType = Define.Scene.GameScene;
 
-        SceneType = Define.Scene.Game;
-
-       //Managers.UI.ShowSceneUI<UI_Inventory>();
+        //Managers.UI.ShowPopupUI<UI_Button>();
 
         Dictionary<int, Data.Stat> dict = Managers.Data.StatDict;
 
